@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Star Wars API</string>
+    <string name="favorite">favorite this item</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- detail fragment -->
+    <string name="detail_name">Name: %s</string>
+    <string name="detail_height">Height: %s</string>
+    <string name="detail_mass">Mass: %s</string>
+    <string name="detail_hair_color">Hair Color: %s</string>
+    <string name="detail_skin_color">Skin Color: %s</string>
+    <string name="detail_eye_color">Eye Color: %s</string>
+    <string name="detail_birth_year">Birth Year: %s</string>
+    <string name="detail_gender">Gender: %s</string>
+</resources>

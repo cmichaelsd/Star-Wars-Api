@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.android.swapi.ui.shared.SharedViewModel" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="start"
+        android:orientation="vertical"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp">
+
+        <TextView
+            android:id="@+id/detailName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text1"
+            app:name="@{viewModel.selectedCharacter.name}"
+            tools:text="Name: Luck Skywarden" />
+        <TextView
+            android:id="@+id/detailHeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:height="@{viewModel.selectedCharacter.height}"
+            tools:text="Height: 167"
+            android:textSize="@dimen/text1"/>
+        <TextView
+            android:id="@+id/detailMass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:mass="@{viewModel.selectedCharacter.mass}"
+            tools:text="Mass: 75"
+            android:textSize="@dimen/text1"/>
+        <TextView
+            android:id="@+id/detailHairColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:hairColor="@{viewModel.selectedCharacter.hairColor}"
+            tools:text="Hair Color: brown"
+            android:textSize="@dimen/text1"/>
+        <TextView
+            android:id="@+id/detailSkinColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:skinColor="@{viewModel.selectedCharacter.skinColor}"
+            tools:text="Skin Color: brown"
+            android:textSize="@dimen/text1"/>
+        <TextView
+            android:id="@+id/detailEyeColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:eyeColor="@{viewModel.selectedCharacter.eyeColor}"
+            tools:text="Eye Color: purple"
+            android:textSize="@dimen/text1"/>
+        <TextView
+            android:id="@+id/detailBirthYear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:birthYear="@{viewModel.selectedCharacter.birthYear}"
+            tools:text="Birth Year: 038934987324"
+            android:textSize="@dimen/text1"/>
+        <TextView
+            android:id="@+id/detailGender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:gender="@{viewModel.selectedCharacter.gender}"
+            tools:text="Gender: male"
+            android:textSize="@dimen/text1"/>
+        <ImageButton
+            android:id="@+id/detailImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:contentDescription="@string/favorite"
+            app:srcCompat="@android:drawable/btn_star_big_off" />
+    </LinearLayout>
+</layout>
