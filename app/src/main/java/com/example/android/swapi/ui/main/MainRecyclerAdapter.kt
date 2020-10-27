@@ -15,7 +15,7 @@ import com.example.android.swapi.R
  * @date 10/24/20
  *
  */
-class MainRecyclerAdapter(private val characters: List<Character>, val itemListener: CharacterItemListener):
+class MainRecyclerAdapter(private val characters: List<Character>, private val itemListener: CharacterItemListener):
         RecyclerView.Adapter<MainRecyclerAdapter.MyViewHolder>() {
 
     inner class MyViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {

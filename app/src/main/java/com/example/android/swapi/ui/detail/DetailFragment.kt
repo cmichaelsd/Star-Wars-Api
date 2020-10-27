@@ -44,7 +44,7 @@ class DetailFragment : Fragment() {
         setHasOptionsMenu(true)
         navController = Navigation.findNavController(requireActivity(), R.id.nav_host)
 
-        // the detail fragment was refactored to use databinding
+        // the detail fragment was refactored to use data-binding
         // it has an xml data / variable element
         // here I inflate the auto generated detail fragment binding impl class
         // attach the life cycle owner and the named variable to its source: viewModel

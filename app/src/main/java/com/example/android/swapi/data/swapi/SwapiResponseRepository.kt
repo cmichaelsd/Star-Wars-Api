@@ -24,9 +24,12 @@ import retrofit2.converter.moshi.MoshiConverterFactory
  */
 class SwapiResponseRepository(val app: Application): NetworkOperationsImpl() {
 
+    private val service: SwapiResponseService
+
     val swapiCharactersData = MutableLiveData<SwapiResponse>()
 
     init {
+        service = createService()
         refreshData()
     }
 
@@ -34,29 +37,29 @@ class SwapiResponseRepository(val app: Application): NetworkOperationsImpl() {
     // this logic will be ran on a background thread
     @WorkerThread
     private suspend fun callWebService() {
-        val networkAvailability = networkAvailable(app)
-
-        if (networkAvailability) {
+        if (networkAvailable(app)) {
             Log.i(LOG_TAG, "Calling web service")
-            val moshi = Moshi.Builder()
-                    .addLast(KotlinJsonAdapterFactory())
-                    .build()
-
-            val retrofit = Retrofit.Builder()
-                    .baseUrl(WEB_SERVICE_URL)
-                    .addConverterFactory(MoshiConverterFactory.create(moshi))
-                    .build()
-
-            val service = retrofit.create(SwapiResponseService::class.java)
-            val serviceData = service.getCharactersData().body()
-
-            swapiCharactersData.postValue(serviceData)
+            swapiCharactersData.postValue(service.getCharactersData().body())
         }
+        // if network not available
     }
 
     fun refreshData() {
         CoroutineScope(Dispatchers.IO).launch {
             callWebService()
         }
+    }
+
+    private fun createService(): SwapiResponseService {
+        val moshi = Moshi.Builder()
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
+
+        val retrofit = Retrofit.Builder()
+                .baseUrl(WEB_SERVICE_URL)
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .build()
+
+        return retrofit.create(SwapiResponseService::class.java)
     }
 }

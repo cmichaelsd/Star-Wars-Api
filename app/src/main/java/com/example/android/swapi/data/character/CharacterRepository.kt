@@ -21,7 +21,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
  *
  */
 class CharacterRepository(val app: Application): NetworkOperationsImpl() {
-
+    private val service: CharacterService
     // create mutable data for this character model
     // this will bind the view-model and the character repo
     // to keep track of any data change which happen for this model
@@ -34,6 +34,7 @@ class CharacterRepository(val app: Application): NetworkOperationsImpl() {
 //    )
 
     init {
+        service = createService()
         // create a co routine which uses dispatchers.io
         // dispatchers.io runs a task on a background thread
         // (dispatchers.main means run a task in foreground thread)
@@ -50,33 +51,30 @@ class CharacterRepository(val app: Application): NetworkOperationsImpl() {
     // android must use webservice on background thread not a ui thread
     @WorkerThread
     private suspend fun callWebService() {
-        val networkAvailability = networkAvailable(app)
-        if (networkAvailability) {
-            val moshi = Moshi.Builder()
-                    .addLast(KotlinJsonAdapterFactory())
-                    .build()
-
-            // establish Im using retrofit
-            // declare my base url for my remote data
-            // use moshi converter to parse json I will get
-            val retrofit = Retrofit.Builder()
-                    .baseUrl(WEB_SERVICE_URL)
-                    .addConverterFactory(MoshiConverterFactory.create(moshi))
-                    .build()
-
-            // declare the service I want to use with this retrofit pattern I defined above
-            val service = retrofit.create(CharacterService::class.java)
-            val serviceData = service.getCharacterData(1).body()
-
-//            Log.i(LOG_TAG, serviceData.toString())
-
-
+        if (networkAvailable(app)) {
             // I set the fetched data to character repos characterData variable
             // I can not use characterData.value = ... because that is used on UI thread
             // postValue is the background thread version of this
             // build a list of characters and then pass to the character list variable above
-//            characterData.postValue(serviceData)
+            // characterData.postValue(service.getCharacterData(1).body())
         }
+    }
+
+    private fun createService(): CharacterService {
+        val moshi = Moshi.Builder()
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
+
+        // establish Im using retrofit
+        // declare my base url for my remote data
+        // use moshi converter to parse json I will get
+        val retrofit = Retrofit.Builder()
+                .baseUrl(WEB_SERVICE_URL)
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .build()
+
+        // declare the service I want to use with this retrofit pattern I defined above
+        return retrofit.create(CharacterService::class.java)
     }
 
 //    private fun getCharacterLocalData() {
