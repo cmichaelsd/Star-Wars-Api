@@ -45,6 +45,18 @@ class FileHelper {
             } else null
         }
 
+        fun saveTextToExternalFiles(app: Application, json: String?) {
+            val file = File(app.getExternalFilesDir("swapi"), "swapi.json")
+            file.writeText(json ?: "", Charsets.UTF_8)
+        }
+
+        fun readTextExternalFiles(app: Application): String? {
+            val file = File(app.getExternalFilesDir("swapi"), "swapi.json")
+            return if (file.exists()) {
+                file.readText()
+            } else null
+        }
+
 
     }
 }
