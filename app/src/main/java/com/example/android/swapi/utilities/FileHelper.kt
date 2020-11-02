@@ -1,6 +1,8 @@
 package com.example.android.swapi.utilities
 
+import android.app.Application
 import android.content.Context
+import java.io.File
 
 /**
  *
@@ -17,6 +19,11 @@ class FileHelper {
                     it.readText()
                 }
             }
+        }
+
+        fun saveTextToFile(app: Application, json: String?) {
+            val file = File(app.filesDir, "swapi.json")
+            file.writeText(json ?: "", Charsets.UTF_8)
         }
     }
 }
