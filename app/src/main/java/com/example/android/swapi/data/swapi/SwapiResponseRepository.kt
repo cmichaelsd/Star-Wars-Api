@@ -61,7 +61,7 @@ class SwapiResponseRepository(val app: Application): NetworkOperationsImpl() {
     private fun saveDataToCache(swapiResponse: SwapiResponse) {
         val adapter: JsonAdapter<SwapiResponse> = moshi.adapter(SwapiResponse::class.java)
         val json = adapter.toJson(swapiResponse)
-        FileHelper.saveTextToFile(app, json)
+        FileHelper.saveTextToCache(app, json)
     }
 
     private fun createService(): SwapiResponseService {

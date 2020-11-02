@@ -25,5 +25,10 @@ class FileHelper {
             val file = File(app.filesDir, "swapi.json")
             file.writeText(json ?: "", Charsets.UTF_8)
         }
+
+        fun saveTextToCache(app: Application, json: String?) {
+            val file = File(app.cacheDir, "swapi.json")
+            file.writeText(json ?: "", Charsets.UTF_8)
+        }
     }
 }
