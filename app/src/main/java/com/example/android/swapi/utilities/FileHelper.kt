@@ -30,5 +30,21 @@ class FileHelper {
             val file = File(app.cacheDir, "swapi.json")
             file.writeText(json ?: "", Charsets.UTF_8)
         }
+
+        fun readTextFile(app: Application): String? {
+            val file = File(app.filesDir, "swapi.json")
+            return if (file.exists()) {
+                file.readText()
+            } else null
+        }
+
+        fun readTextCache(app: Application): String? {
+            val file = File(app.cacheDir, "swapi.json")
+            return if (file.exists()) {
+                file.readText()
+            } else null
+        }
+
+
     }
 }
