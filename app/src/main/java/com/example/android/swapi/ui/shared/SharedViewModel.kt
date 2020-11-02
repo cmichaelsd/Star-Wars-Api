@@ -21,11 +21,11 @@ class SharedViewModel(app: Application): AndroidViewModel(app) {
 
     // this data repo has access to the mutable live data object
     // and can now from the view-model listen to data changes
-    val swapiData = dataRepo.swapiCharactersData
+    val swapiData = dataRepo.swapiResponsesData
 
     val selectedCharacter = MutableLiveData<Character>()
 
     fun refreshData() {
-        dataRepo.refreshData()
+        dataRepo.refreshDataFromWeb()
     }
 }

@@ -6,11 +6,11 @@ import androidx.annotation.WorkerThread
 import androidx.lifecycle.MutableLiveData
 import com.example.android.swapi.LOG_TAG
 import com.example.android.swapi.WEB_SERVICE_URL
+import com.example.android.swapi.data.character.Character
 import com.example.android.swapi.data.network.NetworkOperationsImpl
 import com.example.android.swapi.utilities.FileHelper
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,14 +27,22 @@ import retrofit2.converter.moshi.MoshiConverterFactory
  */
 class SwapiResponseRepository(val app: Application): NetworkOperationsImpl() {
 
-    private val service: SwapiResponseService
     private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
+    private val service: SwapiResponseService
+    private val adapter: JsonAdapter<SwapiResponse> = moshi.adapter(SwapiResponse::class.java)
 
-    val swapiCharactersData = MutableLiveData<SwapiResponse>()
+    val swapiResponsesData = MutableLiveData<SwapiResponse>()
 
     init {
         service = createService()
-        refreshData()
+
+        val data = readDataFromCache()
+        if (data.count == 0) {
+            refreshDataFromWeb()
+        } else {
+            swapiResponsesData.value = data
+            Log.i(LOG_TAG, "Using local data")
+        }
     }
 
     // tag this as a worker thread
@@ -44,7 +52,7 @@ class SwapiResponseRepository(val app: Application): NetworkOperationsImpl() {
         if (networkAvailable(app)) {
             Log.i(LOG_TAG, "Calling web service")
             val data = service.getCharactersData().body()
-            swapiCharactersData.postValue(data)
+            swapiResponsesData.postValue(data)
 
             if (data != null) {
                 saveDataToCache(data)
@@ -52,16 +60,46 @@ class SwapiResponseRepository(val app: Application): NetworkOperationsImpl() {
         }
     }
 
-    fun refreshData() {
+    fun refreshDataFromWeb() {
         CoroutineScope(Dispatchers.IO).launch {
             callWebService()
         }
     }
 
     private fun saveDataToCache(swapiResponse: SwapiResponse) {
-        val adapter: JsonAdapter<SwapiResponse> = moshi.adapter(SwapiResponse::class.java)
         val json = adapter.toJson(swapiResponse)
         FileHelper.saveTextToCache(app, json)
+    }
+
+    private fun readDataFromCache(): SwapiResponse {
+        val json = FileHelper.readTextCache(app)
+
+        // If no data exists in cache return blank dummy data
+        if (json == null) {
+            return createBlankResponse()
+        }
+
+        return adapter.fromJson(json) ?: createBlankResponse()
+    }
+
+    private fun createBlankResponse(): SwapiResponse {
+        return SwapiResponse(
+            0,
+            "",
+            "",
+            listOf(
+                Character(
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                )
+            )
+        )
     }
 
     private fun createService(): SwapiResponseService {
