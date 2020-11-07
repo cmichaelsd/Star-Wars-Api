@@ -69,6 +69,26 @@ class SwapiResponseRepository(val app: Application) : NetworkOperationsImpl() {
         }
     }
 
+    private fun createService(): SwapiResponseService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(WEB_SERVICE_URL)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+
+        return retrofit.create(SwapiResponseService::class.java)
+    }
+
+
+    /**
+     * LOCAL DATA METHODS
+     *
+     * Nice-to-have functions which are no longer use since I
+     * shifted to application to use Rooms.
+     *
+     * These will remain in case I need them in the future and for
+     * reference on implementation.
+     */
+
     private fun saveDataToExternalFiles(swapiResponse: SwapiResponse) {
         // If the application has permission to write to external storage
         // Write content to file
@@ -132,12 +152,4 @@ class SwapiResponseRepository(val app: Application) : NetworkOperationsImpl() {
         )
     }
 
-    private fun createService(): SwapiResponseService {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(WEB_SERVICE_URL)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .build()
-
-        return retrofit.create(SwapiResponseService::class.java)
-    }
 }
