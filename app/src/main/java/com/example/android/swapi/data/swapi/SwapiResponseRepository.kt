@@ -110,13 +110,15 @@ class SwapiResponseRepository(val app: Application) : NetworkOperationsImpl() {
         return adapter.fromJson(json) ?: createBlankResponse()
     }
 
-    private fun createBlankResponse(): SwapiResponse {
+    fun createBlankResponse(): SwapiResponse {
         return SwapiResponse(
+            0,
             0,
             "",
             "",
             listOf(
                 Character(
+                    0,
                     "",
                     "",
                     "",
