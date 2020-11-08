@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.WorkerThread
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -18,6 +19,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.lang.reflect.Type
@@ -43,6 +45,8 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
     private val characterListType: Type = Types.newParameterizedType(List::class.java, Character::class.java)
     private val characterListAdapter: JsonAdapter<List<Character>> = moshi.adapter(characterListType)
 
+    private val characterDao = CharacterDatabase.getDatabase(app).characterDao()
+
     private val pageNumber = 1
 
     val characterData = MutableLiveData<List<Character>>()
@@ -50,13 +54,19 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
     init {
         service = createService()
 
-        val data = readDataFromExternalFiles()
-        Log.i(LOG_TAG, data.toString())
-        if (data.isEmpty()) {
-            refreshDataFromWeb()
-        } else {
-            characterData.value = data
-            Log.i(LOG_TAG, "Using local data")
+        CoroutineScope(Dispatchers.IO).launch {
+            val data = characterDao.getAll()
+
+            if(data.isEmpty()) {
+                callWebService()
+            } else {
+                characterData.postValue(data)
+
+                // Dispatchers.Main is saying this context block runs on the main thread
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(app, "Using local data", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -65,13 +75,16 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
     @WorkerThread
     private suspend fun callWebService() {
         if (networkAvailable(app)) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(app, "Using remote data", Toast.LENGTH_SHORT).show()
+            }
+
             Log.i(LOG_TAG, "Calling web service")
             val data = service.getCharactersData(pageNumber).body()?.results ?: emptyList()
-            characterData.postValue(data)
 
-            if (data.isNotEmpty()) {
-                saveDataToExternalFiles(data)
-            }
+            characterData.postValue(data)
+            characterDao.deleteAll()
+            characterDao.insertCharacters(data)
         }
     }
 
