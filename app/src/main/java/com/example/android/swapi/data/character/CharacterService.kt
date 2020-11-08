@@ -1,8 +1,9 @@
 package com.example.android.swapi.data.character
 
+import com.example.android.swapi.data.swapi.SwapiCharacterResponse
 import retrofit2.Response
 import retrofit2.http.GET
-import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  *
@@ -12,6 +13,6 @@ import retrofit2.http.Path
  *
  */
 interface CharacterService {
-    @GET("/api/people/{character_id}")
-    suspend fun getCharacterData(@Path("character_id") characterId: Int): Response<Character>
+    @GET("/api/people")
+    suspend fun getCharactersData(@Query("page") page: Int): Response<SwapiCharacterResponse>
 }

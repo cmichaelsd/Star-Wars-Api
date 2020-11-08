@@ -51,9 +51,9 @@ class MainFragment : Fragment(),
 
         // this swipe refresh layout will fetch and refresh the recycler when a user pulls down on the recycler
         swipeLayout = requireView().findViewById(R.id.mainSwipeLayout)
-//        swipeLayout.setOnRefreshListener {
-//            viewModel.refreshData()
-//        }
+        swipeLayout.setOnRefreshListener {
+            viewModel.refreshData()
+        }
 
 
         // from here we can listen to the mutable live data object

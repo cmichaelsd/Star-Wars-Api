@@ -1,17 +1,26 @@
 package com.example.android.swapi.data.character
 
+import android.Manifest
 import android.app.Application
+import android.content.pm.PackageManager
+import android.util.Log
 import androidx.annotation.WorkerThread
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
+import com.example.android.swapi.LOG_TAG
 import com.example.android.swapi.WEB_SERVICE_URL
 import com.example.android.swapi.data.network.NetworkOperationsImpl
+import com.example.android.swapi.utilities.FileHelper
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.lang.reflect.Type
 
 /**
  *
@@ -20,76 +29,117 @@ import retrofit2.converter.moshi.MoshiConverterFactory
  * @date 10/23/20
  *
  */
-class CharacterRepository(val app: Application): NetworkOperationsImpl() {
+class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
+    /**
+     * I previously had a SwapiResponseRepository, I found this over complicated things
+     * and was forcing me to add needless complexity
+     *
+     * I think each possible response type from SWAPI should handle its own data and
+     * the SwapiCharacterResponse class exists only as a helper to decode the parent
+     * object for these list objects
+     */
+    private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
     private val service: CharacterService
-    // create mutable data for this character model
-    // this will bind the view-model and the character repo
-    // to keep track of any data change which happen for this model
-    val characterData = MutableLiveData<Character>()
+    private val characterListType: Type = Types.newParameterizedType(List::class.java, Character::class.java)
+    private val characterListAdapter: JsonAdapter<List<Character>> = moshi.adapter(characterListType)
 
-//    // init the type for the characters list
-//    private val listType = Types.newParameterizedType(
-//        List::class.java,
-//        Character::class.java
-//    )
+    private val pageNumber = 1
+
+    val characterData = MutableLiveData<List<Character>>()
 
     init {
         service = createService()
-        // create a co routine which uses dispatchers.io
-        // dispatchers.io runs a task on a background thread
-        // (dispatchers.main means run a task in foreground thread)
-        CoroutineScope(Dispatchers.IO).launch {
 
-            // when this repository is created get the character data which
-            // can then be accessed through the view-model
+        val data = readDataFromExternalFiles()
+        Log.i(LOG_TAG, data.toString())
+        if (data.isEmpty()) {
+            refreshDataFromWeb()
+        } else {
+            characterData.value = data
+            Log.i(LOG_TAG, "Using local data")
+        }
+    }
+
+    // tag this as a worker thread
+    // this logic will be ran on a background thread
+    @WorkerThread
+    private suspend fun callWebService() {
+        if (networkAvailable(app)) {
+            Log.i(LOG_TAG, "Calling web service")
+            val data = service.getCharactersData(pageNumber).body()?.results ?: emptyList()
+            characterData.postValue(data)
+
+            if (data.isNotEmpty()) {
+                saveDataToExternalFiles(data)
+            }
+        }
+    }
+
+    fun refreshDataFromWeb() {
+        CoroutineScope(Dispatchers.IO).launch {
             callWebService()
         }
     }
 
-    // declare a function to get data from the web
-    // declare this function as a worker thread
-    // android must use webservice on background thread not a ui thread
-    @WorkerThread
-    private suspend fun callWebService() {
-        if (networkAvailable(app)) {
-            // I set the fetched data to character repos characterData variable
-            // I can not use characterData.value = ... because that is used on UI thread
-            // postValue is the background thread version of this
-            // build a list of characters and then pass to the character list variable above
-            // characterData.postValue(service.getCharacterData(1).body())
-        }
-    }
-
     private fun createService(): CharacterService {
-        val moshi = Moshi.Builder()
-                .addLast(KotlinJsonAdapterFactory())
-                .build()
-
-        // establish Im using retrofit
-        // declare my base url for my remote data
-        // use moshi converter to parse json I will get
         val retrofit = Retrofit.Builder()
-                .baseUrl(WEB_SERVICE_URL)
-                .addConverterFactory(MoshiConverterFactory.create(moshi))
-                .build()
+            .baseUrl(WEB_SERVICE_URL)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
 
-        // declare the service I want to use with this retrofit pattern I defined above
         return retrofit.create(CharacterService::class.java)
     }
 
-//    private fun getCharacterLocalData() {
-//        val text = FileHelper.getTextFromResources(app, R.raw.characters_data)
-//        // init moshi json parser
-//        val moshi = Moshi.Builder()
-//            .addLast(KotlinJsonAdapterFactory())
-//            .build()
-//
-//        // for parsing this character json use the predefined list type
-//        // moshi will now understand what to do with the json text it is parsing
-//        val adapter: JsonAdapter<List<Character>> = moshi.adapter(listType)
-//
-//        // moshi will now accept the characters_data.json as text
-//        // which will be parsed and formatted as the associated list type
-//        characterData.value = adapter.fromJson(text) ?: emptyList()
-//    }
+
+    /**
+     * LOCAL DATA METHODS
+     *
+     * Nice-to-have functions which are no longer use since I
+     * shifted to application to use Rooms.
+     *
+     * These will remain in case I need them in the future and for
+     * reference on implementation.
+     */
+
+    private fun saveDataToExternalFiles(characters: List<Character>) {
+        // If the application has permission to write to external storage
+        // Write content to file
+        if (ContextCompat.checkSelfPermission(
+                app,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            val json = characterListAdapter.toJson(characters)
+            FileHelper.saveTextToExternalFiles(app, json)
+        }
+    }
+
+    private fun readDataFromExternalFiles(): List<Character> {
+        val json = FileHelper.readTextExternalFiles(app)
+
+        // If no data exists in external files return blank dummy data
+        if (json == null) {
+            return emptyList()
+        }
+
+        return characterListAdapter.fromJson(json) ?: emptyList()
+    }
+
+    private fun saveDataToCache(characters: List<Character>) {
+        val json = characterListAdapter.toJson(characters)
+        FileHelper.saveTextToCache(app, json)
+    }
+
+    private fun readDataFromCache(): List<Character> {
+        val json = FileHelper.readTextCache(app)
+
+        // If no data exists in cache return blank dummy data
+        if (json == null) {
+            return emptyList()
+        }
+
+        return characterListAdapter.fromJson(json) ?: emptyList()
+    }
+
 }

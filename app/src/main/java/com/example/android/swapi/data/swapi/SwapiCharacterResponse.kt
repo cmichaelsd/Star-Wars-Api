@@ -9,7 +9,7 @@ import com.example.android.swapi.data.character.Character
  * @date 10/24/20
  *
  */
-data class SwapiResponse (
+data class SwapiCharacterResponse (
     val count: Int,
     val next: String,
     val previous: String?,
