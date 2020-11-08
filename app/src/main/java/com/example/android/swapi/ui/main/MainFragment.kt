@@ -51,9 +51,9 @@ class MainFragment : Fragment(),
 
         // this swipe refresh layout will fetch and refresh the recycler when a user pulls down on the recycler
         swipeLayout = requireView().findViewById(R.id.mainSwipeLayout)
-        swipeLayout.setOnRefreshListener {
-            viewModel.refreshData()
-        }
+//        swipeLayout.setOnRefreshListener {
+//            viewModel.refreshData()
+//        }
 
 
         // from here we can listen to the mutable live data object
@@ -66,8 +66,7 @@ class MainFragment : Fragment(),
             // it wasnt used in linkedin learning tutorial
             // can this be inlined on the recycler?
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-            adapter = MainRecyclerAdapter(it.results, this)
+            adapter = MainRecyclerAdapter(it, this)
             recyclerView.adapter = adapter
             swipeLayout.isRefreshing = false
         })

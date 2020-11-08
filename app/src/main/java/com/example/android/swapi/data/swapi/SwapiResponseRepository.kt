@@ -8,18 +8,21 @@ import androidx.annotation.WorkerThread
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import com.example.android.swapi.LOG_TAG
+import com.example.android.swapi.R
 import com.example.android.swapi.WEB_SERVICE_URL
 import com.example.android.swapi.data.character.Character
 import com.example.android.swapi.data.network.NetworkOperationsImpl
 import com.example.android.swapi.utilities.FileHelper
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.lang.reflect.Type
 
 /**
  *
@@ -32,15 +35,21 @@ class SwapiResponseRepository(val app: Application) : NetworkOperationsImpl() {
 
     private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
     private val service: SwapiResponseService
+
     private val adapter: JsonAdapter<SwapiResponse> = moshi.adapter(SwapiResponse::class.java)
 
-    val swapiResponsesData = MutableLiveData<SwapiResponse>()
+    private val characterType: Type = Types.newParameterizedType(List::class.java, Character::class.java)
+    private val characterAdapter: JsonAdapter<List<Character>> = moshi.adapter(characterType)
+
+    private val pageNumber = 1
+
+    val swapiResponsesData = MutableLiveData<List<Character>>()
 
     init {
         service = createService()
 
         val data = readDataFromExternalFiles()
-        if (data.count == 0) {
+        if (data.count() == 0) {
             refreshDataFromWeb()
         } else {
             swapiResponsesData.value = data
@@ -54,10 +63,10 @@ class SwapiResponseRepository(val app: Application) : NetworkOperationsImpl() {
     private suspend fun callWebService() {
         if (networkAvailable(app)) {
             Log.i(LOG_TAG, "Calling web service")
-            val data = service.getCharactersData().body()
+            val data = service.getCharactersData(pageNumber).body()?.results ?: emptyList()
             swapiResponsesData.postValue(data)
 
-            if (data != null) {
+            if (data.isNotEmpty()) {
                 saveDataToExternalFiles(data)
             }
         }
@@ -89,7 +98,7 @@ class SwapiResponseRepository(val app: Application) : NetworkOperationsImpl() {
      * reference on implementation.
      */
 
-    private fun saveDataToExternalFiles(swapiResponse: SwapiResponse) {
+    private fun saveDataToExternalFiles(characters: List<Character>) {
         // If the application has permission to write to external storage
         // Write content to file
         if (ContextCompat.checkSelfPermission(
@@ -98,58 +107,36 @@ class SwapiResponseRepository(val app: Application) : NetworkOperationsImpl() {
             )
             == PackageManager.PERMISSION_GRANTED
         ) {
-            val json = adapter.toJson(swapiResponse)
+            val json = characterAdapter.toJson(characters)
             FileHelper.saveTextToExternalFiles(app, json)
         }
     }
 
-    private fun saveDataToCache(swapiResponse: SwapiResponse) {
-        val json = adapter.toJson(swapiResponse)
+    private fun saveDataToCache(characters: List<Character>) {
+        val json = characterAdapter.toJson(characters)
         FileHelper.saveTextToCache(app, json)
     }
 
-    private fun readDataFromCache(): SwapiResponse {
+    private fun readDataFromCache(): List<Character> {
         val json = FileHelper.readTextCache(app)
 
         // If no data exists in cache return blank dummy data
         if (json == null) {
-            return createBlankResponse()
+            return emptyList()
         }
 
-        return adapter.fromJson(json) ?: createBlankResponse()
+        return characterAdapter.fromJson(json) ?: emptyList()
     }
 
-    private fun readDataFromExternalFiles(): SwapiResponse {
+    private fun readDataFromExternalFiles(): List<Character> {
         val json = FileHelper.readTextCache(app)
 
         // If no data exists in external files return blank dummy data
         if (json == null) {
-            return createBlankResponse()
+            return emptyList()
         }
 
-        return adapter.fromJson(json) ?: createBlankResponse()
-    }
-
-    fun createBlankResponse(): SwapiResponse {
-        return SwapiResponse(
-            0,
-            0,
-            "",
-            "",
-            listOf(
-                Character(
-                    0,
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    ""
-                )
-            )
-        )
+        return characterAdapter.fromJson(json) ?: emptyList()
     }
 
 }

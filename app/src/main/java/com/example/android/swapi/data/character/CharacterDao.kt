@@ -12,17 +12,17 @@ import androidx.room.Query
  * @date 11/04/20
  *
  */
-@Dao
-interface CharacterDao {
-    @Query("SELECT * FROM characters")
-    fun getAll(): List<Character>
-
-    @Insert
-    suspend fun insertCharacter(character: Character)
-
-    @Insert
-    suspend fun insertCharacters(characters: List<Character>)
-
-    @Query("DELETE FROM characters")
-    suspend fun deleteAll()
-}
+//@Dao
+//interface CharacterDao {
+//    @Query("SELECT * FROM characters")
+//    fun getAll(): List<Character>
+//
+//    @Insert
+//    suspend fun insertCharacter(character: Character)
+//
+//    @Insert
+//    suspend fun insertCharacters(characters: List<Character>)
+//
+//    @Query("DELETE FROM characters")
+//    suspend fun deleteAll()
+//}

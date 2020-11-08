@@ -1,7 +1,5 @@
 package com.example.android.swapi.data.character
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 
 /**
@@ -11,10 +9,7 @@ import com.squareup.moshi.Json
  * @date 10/23/20
  *
  */
-@Entity(tableName = "characters")
 data class Character (
-    @PrimaryKey(autoGenerate = true)
-    val characterId: Int,
     val name: String,
     val height: String,
     val mass: String,

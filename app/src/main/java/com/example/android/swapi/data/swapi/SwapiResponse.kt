@@ -1,7 +1,5 @@
 package com.example.android.swapi.data.swapi
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.example.android.swapi.data.character.Character
 
 /**
@@ -11,10 +9,7 @@ import com.example.android.swapi.data.character.Character
  * @date 10/24/20
  *
  */
-@Entity(tableName = "swapi_response")
 data class SwapiResponse (
-    @PrimaryKey(autoGenerate = true)
-    val swapiResponseId: Int,
     val count: Int,
     val next: String,
     val previous: String?,
