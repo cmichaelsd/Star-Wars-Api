@@ -14,7 +14,7 @@ import com.squareup.moshi.Json
 @Entity(tableName = "characters")
 data class Character (
     @PrimaryKey(autoGenerate = true)
-    val characterId: Int?,
+    val characterId: Int = 0,
     val name: String,
     val height: String,
     val mass: String,
@@ -26,5 +26,6 @@ data class Character (
     val eyeColor: String,
     @Json(name = "birth_year")
     val birthYear: String,
-    val gender: String
+    val gender: String,
+    val favorite: Boolean = false
 )

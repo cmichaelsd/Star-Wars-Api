@@ -70,6 +70,12 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
         }
     }
 
+    fun updateFavorite(id: Int) {
+        CoroutineScope(Dispatchers.IO).launch {
+            characterDao.updateFavorite(id)
+        }
+    }
+
     // tag this as a worker thread
     // this logic will be ran on a background thread
     @WorkerThread

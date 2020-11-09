@@ -1,5 +1,6 @@
 package com.example.android.swapi.utilities
 
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 
@@ -41,4 +42,12 @@ fun birthYear(view: TextView, birthYear: String) {
 @BindingAdapter("gender")
 fun gender(view: TextView, gender: String) {
     view.text = "Gender: $gender"
+}
+@BindingAdapter("favorite")
+fun favorite(view: ImageButton, favorite: Boolean) {
+    if (favorite) {
+        view.setImageResource(android.R.drawable.btn_star_big_on)
+    } else {
+        view.setImageResource(android.R.drawable.btn_star_big_off)
+    }
 }

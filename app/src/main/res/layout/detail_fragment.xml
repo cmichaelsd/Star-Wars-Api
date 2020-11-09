@@ -80,6 +80,6 @@
             android:layout_height="wrap_content"
             android:background="@null"
             android:contentDescription="@string/favorite"
-            app:srcCompat="@android:drawable/btn_star_big_off" />
+            app:favorite="@{viewModel.selectedCharacter.favorite}" />
     </LinearLayout>
 </layout>

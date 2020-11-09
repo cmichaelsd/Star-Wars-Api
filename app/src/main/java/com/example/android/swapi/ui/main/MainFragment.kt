@@ -1,5 +1,6 @@
 package com.example.android.swapi.ui.main
 
+import android.app.Application
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -16,17 +17,23 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.android.swapi.LOG_TAG
 import com.example.android.swapi.R
 import com.example.android.swapi.data.character.Character
+import com.example.android.swapi.data.character.CharacterDao
+import com.example.android.swapi.data.character.CharacterDatabase
+import com.example.android.swapi.data.character.CharacterRepository
 import com.example.android.swapi.ui.shared.SharedViewModel
 
 
 class MainFragment : Fragment(),
-    MainRecyclerAdapter.CharacterItemListener {
+    MainRecyclerAdapter.CharacterItemListener,
+    MainRecyclerAdapter.FavoriteButtonListener {
 
     private lateinit var viewModel: SharedViewModel
     private lateinit var swipeLayout: SwipeRefreshLayout
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MainRecyclerAdapter
     private lateinit var navController: NavController
+
+    private lateinit var characterRepository: CharacterRepository
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,6 +53,7 @@ class MainFragment : Fragment(),
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        characterRepository = CharacterRepository(requireActivity().application)
         recyclerView = requireView().findViewById(R.id.mainFragmentRecycler)
         viewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
@@ -66,10 +74,15 @@ class MainFragment : Fragment(),
             // it wasnt used in linkedin learning tutorial
             // can this be inlined on the recycler?
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
-            adapter = MainRecyclerAdapter(it, this)
+            adapter = MainRecyclerAdapter(it, this, this)
             recyclerView.adapter = adapter
             swipeLayout.isRefreshing = false
         })
+    }
+
+    override fun onFavoriteButtonClick(character: Character) {
+        Log.i(LOG_TAG, "Favorite clicked!")
+        characterRepository.updateFavorite(character.characterId)
     }
 
     override fun onCharacterItemClick(character: Character) {

@@ -17,6 +17,9 @@ interface CharacterDao {
     @Query("SELECT * FROM characters")
     fun getAll(): List<Character>
 
+    @Query("UPDATE characters SET favorite = NOT favorite WHERE characterId = :characterId")
+    fun updateFavorite(characterId: Int)
+
     @Insert
     suspend fun insertCharacter(character: Character)
 
