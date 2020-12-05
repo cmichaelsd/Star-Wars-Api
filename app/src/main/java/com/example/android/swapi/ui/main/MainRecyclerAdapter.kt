@@ -23,8 +23,8 @@ class MainRecyclerAdapter(
         RecyclerView.Adapter<MainRecyclerAdapter.MyViewHolder>() {
 
     inner class MyViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-        val nameText = itemView.findViewById<TextView>(R.id.characterNameTextView)
-        val favoriteButton = itemView.findViewById<ImageButton>(R.id.imageButton)
+        val nameText: TextView = itemView.findViewById(R.id.characterNameTextView)
+        val favoriteButton: ImageButton = itemView.findViewById(R.id.imageButton)
     }
 
     interface CharacterItemListener {

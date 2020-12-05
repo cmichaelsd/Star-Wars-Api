@@ -1,6 +1,7 @@
 package com.example.android.swapi.data.character
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 

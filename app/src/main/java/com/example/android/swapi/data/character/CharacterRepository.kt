@@ -54,6 +54,10 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
     init {
         service = createService()
 
+        refreshData()
+    }
+
+    fun refreshData() {
         CoroutineScope(Dispatchers.IO).launch {
             val data = characterDao.getAll()
 
@@ -89,14 +93,7 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
             val data = service.getCharactersData(pageNumber).body()?.results ?: emptyList()
 
             characterData.postValue(data)
-            characterDao.deleteAll()
             characterDao.insertCharacters(data)
-        }
-    }
-
-    fun refreshDataFromWeb() {
-        CoroutineScope(Dispatchers.IO).launch {
-            callWebService()
         }
     }
 
