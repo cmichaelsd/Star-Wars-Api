@@ -37,7 +37,6 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
      * and was forcing me to add needless complexity
      *
      * I think each possible response type from SWAPI should handle its own data and
-     * the SwapiCharacterResponse class exists only as a helper to decode the parent
      * object for these list objects
      */
     private val moshi: Moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
@@ -50,6 +49,7 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
     private val pageNumber = 1
 
     val characterData = MutableLiveData<List<Character>>()
+    val selectedCharacter = MutableLiveData<Character>()
 
     init {
         service = createService()
@@ -78,6 +78,15 @@ class CharacterRepository(val app: Application) : NetworkOperationsImpl() {
         CoroutineScope(Dispatchers.IO).launch {
             characterDao.updateFavorite(id)
         }
+        refreshData()
+    }
+
+    fun updateSelectedCharacter(id: Int) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val data = characterDao.getById(id)
+            selectedCharacter.postValue(data)
+        }
+        refreshData()
     }
 
     // tag this as a worker thread

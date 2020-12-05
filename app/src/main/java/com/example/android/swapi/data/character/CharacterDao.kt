@@ -1,9 +1,7 @@
 package com.example.android.swapi.data.character
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 
@@ -18,6 +16,9 @@ import androidx.room.Query
 interface CharacterDao {
     @Query("SELECT * FROM characters")
     fun getAll(): List<Character>
+
+    @Query("SELECT * FROM characters WHERE characterId = :characterId")
+    fun getById(characterId: Int): Character
 
     @Query("UPDATE characters SET favorite = NOT favorite WHERE characterId = :characterId")
     fun updateFavorite(characterId: Int)

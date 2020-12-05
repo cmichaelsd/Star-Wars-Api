@@ -74,7 +74,6 @@ class MainFragment : Fragment(),
     override fun onFavoriteButtonClick(character: Character) {
         Log.i(LOG_TAG, "Favorite clicked!")
         characterRepository.updateFavorite(character.characterId)
-        viewModel.refreshData()
     }
 
     override fun onCharacterItemClick(character: Character) {

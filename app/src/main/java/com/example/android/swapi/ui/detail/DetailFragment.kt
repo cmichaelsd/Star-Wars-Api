@@ -7,13 +7,15 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.example.android.swapi.LOG_TAG
 import com.example.android.swapi.R
+import com.example.android.swapi.data.character.CharacterRepository
+import com.example.android.swapi.databinding.DetailFragmentBinding
 import com.example.android.swapi.databinding.DetailFragmentBindingImpl
 import com.example.android.swapi.ui.shared.SharedViewModel
 
@@ -28,9 +30,14 @@ class DetailFragment : Fragment() {
 
     private lateinit var viewModel: SharedViewModel
     private lateinit var navController: NavController
+    private lateinit var favoriteButton: ImageButton
+    private lateinit var characterRepository: CharacterRepository
+    private lateinit var binding: DetailFragmentBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         viewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
 
         // setting this as app compat activity gives access to action bar component
@@ -48,7 +55,7 @@ class DetailFragment : Fragment() {
         // it has an xml data / variable element
         // here I inflate the auto generated detail fragment binding impl class
         // attach the life cycle owner and the named variable to its source: viewModel
-        val binding = DetailFragmentBindingImpl.inflate(inflater, container, false)
+        binding = DetailFragmentBindingImpl.inflate(inflater, container, false)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
@@ -56,10 +63,27 @@ class DetailFragment : Fragment() {
         return binding.root
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        characterRepository = CharacterRepository(requireActivity().application)
+        favoriteButton = requireActivity().findViewById(R.id.detailImageButton)
+
+        favoriteButton.setOnClickListener {
+            onFavoriteButtonClick()
+        }
+    }
+
+    private fun onFavoriteButtonClick() {
+        Log.i(LOG_TAG, "Favorite clicked!")
+        val characterId = binding.viewModel!!.selectedCharacter.value!!.characterId
+        characterRepository.updateFavorite(characterId)
+        binding.viewModel!!.updateSelectedCharacter(characterId)
+    }
+
     // this function relates to the back arrow being clicked
     // the back arrow is apart of this 'options menu'
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId  == android.R.id.home) {
+        if (item.itemId == android.R.id.home) {
             navController.navigateUp()
         }
         return super.onOptionsItemSelected(item)

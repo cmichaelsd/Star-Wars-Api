@@ -23,9 +23,13 @@ class SharedViewModel(app: Application): AndroidViewModel(app) {
     // and can now from the view-model listen to data changes
     val swapiData = dataRepo.characterData
 
-    val selectedCharacter = MutableLiveData<Character>()
+    val selectedCharacter = dataRepo.selectedCharacter
 
     fun refreshData() {
         dataRepo.refreshData()
+    }
+
+    fun updateSelectedCharacter(id: Int) {
+        dataRepo.updateSelectedCharacter(id)
     }
 }
